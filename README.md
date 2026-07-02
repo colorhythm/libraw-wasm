@@ -4,7 +4,7 @@
 > [LibRaw](https://www.libraw.org/) (LibRaw LLC) made browser-side raw
 > decoding straightforward to build on. Our fork adds numeric color
 > getters and processing-parameter setters (half_size, use_camera_wb)
-> for the Eyrie and Tyto applications. Thank you, Sotaro.
+> for Colorhythm's imaging tools. Thank you, Sotaro.
 
 # libraw.wasm
 
