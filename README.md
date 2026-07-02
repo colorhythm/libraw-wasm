@@ -6,7 +6,7 @@
 > getters and processing-parameter setters (half_size, use_camera_wb)
 > for Colorhythm's imaging tools. Thank you, Sotaro.
 
-# libraw.wasm
+# libraw-wasm
 
 This is a WebAssembly build of [LibRaw](https://www.libraw.org/), a library for reading raw images.
 
