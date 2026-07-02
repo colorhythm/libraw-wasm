@@ -8,7 +8,7 @@
 
 # libraw.wasm
 
-This is a WebAssembly build of [LibRaw](https://www.libraw.org/), a library for reading RAW iamges.
+This is a WebAssembly build of [LibRaw](https://www.libraw.org/), a library for reading raw images.
 
 ## LICENSE
 
