@@ -1,3 +1,11 @@
+> **Fork notice & thanks** — this is Colorhythm's fork of
+> [**libraw.wasm** by TOMIKAWA Sotaro (ssssota)](https://github.com/ssssota/libraw.wasm),
+> whose clean TypeScript bindings over a wasm build of
+> [LibRaw](https://www.libraw.org/) (LibRaw LLC) made browser-side raw
+> decoding straightforward to build on. Our fork adds numeric color
+> getters and processing-parameter setters (half_size, use_camera_wb)
+> for the Eyrie and Tyto applications. Thank you, Sotaro.
+
 # libraw.wasm
 
 This is a WebAssembly build of [LibRaw](https://www.libraw.org/), a library for reading RAW iamges.
