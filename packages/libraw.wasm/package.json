@@ -1,6 +1,6 @@
 {
     "name": "@colorhythm/libraw-wasm",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "LibRaw WebAssembly bindings with camera-raw analysis surfaces for browser and Node.js applications.",
     "type": "module",
     "main": "dist/index.js",

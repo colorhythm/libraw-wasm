@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.1 - 2026-08-03
+
+### Added
+
+- `LibRawError`, with the stable numeric LibRaw error code and diagnostic text
+
+### Fixed
+
+- Decoded direct C string pointers correctly, restoring LibRaw diagnostics and
+  unpack-function names
+- Enabled C++ exception handling in the WebAssembly build so truncated inputs
+  return LibRaw I/O errors instead of raw WebAssembly exception values
+- Reported processing-memory errors through the same typed error path
+
 ## 1.1.0 - 2026-08-03
 
 ### Added

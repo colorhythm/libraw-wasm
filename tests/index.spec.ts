@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { LibRaw } from "@colorhythm/libraw-wasm";
+import { LibRaw, LibRawError } from "@colorhythm/libraw-wasm";
 import { expect, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,6 +20,15 @@ interface TestWasmModule {
 
 function getTestWasmModule() {
     return (LibRaw as unknown as { module: TestWasmModule }).module;
+}
+
+function captureError(callback: () => void): unknown {
+    try {
+        callback();
+    } catch (error) {
+        return error;
+    }
+    throw new Error("Expected callback to throw");
 }
 
 async function renderCr2(halfSize: boolean, useCameraWb: boolean) {
@@ -48,6 +57,34 @@ it("meta", async () => {
     expect(LibRaw.versionNumber()).toMatchInlineSnapshot("5633");
     expect(LibRaw.cameraList()).toMatchSnapshot();
     expect(LibRaw.cameraList()).toContain("Sigma DP2 Merrill");
+});
+
+it("reports unsupported input with the LibRaw code and message", async () => {
+    using libraw = new LibRaw();
+    await libraw.waitUntilReady();
+
+    const error = captureError(() => libraw.open(new ArrayBuffer(64)));
+
+    expect(error).toBeInstanceOf(LibRawError);
+    expect(error).toMatchObject({
+        code: -2,
+        message: "Unsupported file format or not RAW file",
+        name: "LibRawError",
+    });
+});
+
+it("maps truncated-input exceptions to the LibRaw I/O error", async () => {
+    using libraw = new LibRaw();
+    await libraw.waitUntilReady();
+
+    const error = captureError(() => libraw.open(new ArrayBuffer(4)));
+
+    expect(error).toBeInstanceOf(LibRawError);
+    expect(error).toMatchObject({
+        code: -100009,
+        message: "Input/output error",
+        name: "LibRawError",
+    });
 });
 
 it("ARW", async () => {
@@ -83,6 +120,7 @@ it("CR2", async () => {
         path.join(samplesDir, "CR2", "sample_canon_400d1.cr2"),
     );
     libraw.open(file.buffer);
+    expect(libraw.unpackFunctionName()).toBe("lossless_jpeg_load_raw()");
 
     const iparams = libraw.getIParams();
     expect(iparams.make).toBe("Canon");
