@@ -12,11 +12,6 @@ extern "C" DllDef ushort *libraw_get_raw_image(libraw_data_t *lr) {
 	if (!lr) return NULL;
 	return lr->rawdata.raw_image;
 }`,
-	_libraw_set_use_camera_wb: `\
-extern "C" DllDef void libraw_set_use_camera_wb(libraw_data_t *lr, int value) {
-	if (!lr) return;
-	lr->params.use_camera_wb = value;
-}`,
 	_libraw_get_thumbnail: `\
 extern "C" DllDef libraw_thumbnail_t *libraw_get_thumbnail(libraw_data_t *lr) {
 	if (!lr) return NULL;
@@ -117,7 +112,156 @@ extern "C" DllDef unsigned libraw_get_data_maximum(libraw_data_t *lr) {
 extern "C" DllDef float libraw_get_cam_xyz(libraw_data_t *lr, int i, int j) {
 	if (!lr) return 0.0f;
 	if (i < 0 || i >= 4 || j < 0 || j >= 3) return 0.0f;
-	return lr->color.cam_xyz[i][j];
+	return lr->rawdata.color.cam_xyz[i][j];
+}`,
+    _libraw_get_active_height: `\
+extern "C" DllDef int libraw_get_active_height(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->sizes.height;
+}`,
+    _libraw_get_active_width: `\
+extern "C" DllDef int libraw_get_active_width(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->sizes.width;
+}`,
+    _libraw_get_black_level: `\
+static unsigned libraw_adjusted_black_level(libraw_data_t *lr, int index) {
+    unsigned black = lr->rawdata.color.black;
+    unsigned cblack[LIBRAW_CBLACK_SIZE];
+    unsigned filters = lr->idata.filters;
+    int c;
+    int common;
+
+    memcpy(cblack, lr->rawdata.color.cblack, sizeof(cblack));
+
+    if (filters > 1000 && (cblack[4] + 1) / 2 == 1 &&
+        (cblack[5] + 1) / 2 == 1) {
+        LibRaw *libraw = (LibRaw *)lr->parent_class;
+        int colors[4];
+        int green_count = 0;
+        int last_green = -1;
+
+        for (c = 0; c < 4; c++) {
+            colors[c] = libraw->FC(c / 2, c % 2);
+            if (colors[c] == 1) {
+                green_count++;
+                last_green = c;
+            }
+        }
+        if (green_count > 1 && last_green >= 0) colors[last_green] = 3;
+        for (c = 0; c < 4; c++) {
+            cblack[colors[c]] +=
+                cblack[6 + c / 2 % cblack[4] * cblack[5] + c % 2 % cblack[5]];
+        }
+        cblack[4] = cblack[5] = 0;
+    } else if (filters <= 1000 && cblack[4] == 1 && cblack[5] == 1) {
+        for (c = 0; c < 4; c++) cblack[c] += cblack[6];
+        cblack[4] = cblack[5] = 0;
+    }
+
+    common = cblack[3];
+    for (c = 0; c < 3; c++) {
+        if (common > (int)cblack[c]) common = cblack[c];
+    }
+    for (c = 0; c < 4; c++) cblack[c] -= common;
+    black += common;
+
+    if (cblack[4] && cblack[5]) {
+        int nonzero = 0;
+
+        common = cblack[6];
+        for (c = 1; c < (int)(cblack[4] * cblack[5]); c++) {
+            if (common > (int)cblack[6 + c]) common = cblack[6 + c];
+        }
+        for (c = 0; c < (int)(cblack[4] * cblack[5]); c++) {
+            cblack[6 + c] -= common;
+            if (cblack[6 + c]) nonzero++;
+        }
+        black += common;
+        if (!nonzero) cblack[4] = cblack[5] = 0;
+    }
+
+    return cblack[index] + black;
+}
+
+extern "C" DllDef unsigned libraw_get_black_level(libraw_data_t *lr, int index) {
+    if (!lr || index < 0 || index >= 4) return 0;
+    return libraw_adjusted_black_level(lr, index);
+}`,
+    _libraw_get_bottom_margin: `\
+extern "C" DllDef int libraw_get_bottom_margin(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->sizes.raw_height - lr->sizes.height - lr->sizes.top_margin;
+}`,
+    _libraw_get_cdesc: `\
+extern "C" DllDef int libraw_get_cdesc(libraw_data_t *lr, int index) {
+    if (!lr || index < 0 || index >= 5) return 0;
+    return (unsigned char)lr->idata.cdesc[index];
+}`,
+    _libraw_get_cmatrix: `\
+extern "C" DllDef float libraw_get_cmatrix(libraw_data_t *lr, int i, int j) {
+    if (!lr || i < 0 || i >= 3 || j < 0 || j >= 4) return 0.0f;
+    return lr->rawdata.color.cmatrix[i][j];
+}`,
+    _libraw_get_color3_image: `\
+extern "C" DllDef ushort *libraw_get_color3_image(libraw_data_t *lr) {
+    if (!lr) return NULL;
+    return (ushort *)lr->rawdata.color3_image;
+}`,
+    _libraw_get_color4_image: `\
+extern "C" DllDef ushort *libraw_get_color4_image(libraw_data_t *lr) {
+    if (!lr) return NULL;
+    return (ushort *)lr->rawdata.color4_image;
+}`,
+    _libraw_get_colors: `\
+extern "C" DllDef int libraw_get_colors(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->idata.colors;
+}`,
+    _libraw_get_filters: `\
+extern "C" DllDef unsigned libraw_get_filters(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->idata.filters;
+}`,
+    _libraw_get_flip: `\
+extern "C" DllDef int libraw_get_flip(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->sizes.flip;
+}`,
+    _libraw_get_is_foveon: `\
+extern "C" DllDef unsigned libraw_get_is_foveon(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->idata.is_foveon;
+}`,
+    _libraw_get_left_margin: `\
+extern "C" DllDef int libraw_get_left_margin(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->sizes.left_margin;
+}`,
+    _libraw_get_linear_max: `\
+extern "C" DllDef unsigned libraw_get_linear_max(libraw_data_t *lr, int index) {
+    if (!lr || index < 0 || index >= 4) return 0;
+    return lr->rawdata.color.linear_max[index];
+}`,
+    _libraw_get_pixel_aspect: `\
+extern "C" DllDef double libraw_get_pixel_aspect(libraw_data_t *lr) {
+    if (!lr) return 0.0;
+    return lr->sizes.pixel_aspect;
+}`,
+    _libraw_get_raw_pitch: `\
+extern "C" DllDef unsigned libraw_get_raw_pitch(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->sizes.raw_pitch;
+}`,
+    _libraw_get_right_margin: `\
+extern "C" DllDef int libraw_get_right_margin(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->sizes.raw_width - lr->sizes.width - lr->sizes.left_margin;
+}`,
+    _libraw_get_top_margin: `\
+extern "C" DllDef int libraw_get_top_margin(libraw_data_t *lr) {
+    if (!lr) return 0;
+    return lr->sizes.top_margin;
 }`,
 	// Upstream's C API exposes neither of these params; both matter for
 	// browser-scale decoding: half_size decodes
@@ -203,6 +347,7 @@ async function main() {
 	const makefile = `\
 all: lib/libraw.wasm
 ${patchedMakefile}
+CFLAGS+=-DUSE_X3FTOOLS
 lib/libraw.wasm: \${LIB_OBJECTS}
 	$\{CC} -Os -o lib/libraw.mjs -s MODULARIZE=1 -s EXPORTED_RUNTIME_METHODS=HEAPU8 -s ALLOW_MEMORY_GROWTH=1 -s 'EXPORTED_FUNCTIONS=${JSON.stringify(
 		exportFunctions,

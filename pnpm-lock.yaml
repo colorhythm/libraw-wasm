@@ -42,7 +42,7 @@ importers:
       comlink:
         specifier: ^4.4.2
         version: 4.4.2
-      libraw.wasm:
+      '@colorhythm/libraw-wasm':
         specifier: workspace:*
         version: link:../packages/libraw.wasm
       mizu.css:
@@ -97,7 +97,7 @@ importers:
 
   tests:
     dependencies:
-      libraw.wasm:
+      '@colorhythm/libraw-wasm':
         specifier: workspace:*
         version: link:../packages/libraw.wasm
     devDependencies:
