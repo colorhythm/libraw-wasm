@@ -10,9 +10,10 @@ const samplesDir = path.join(repoRoot, "raw-samples");
 
 it("meta", async () => {
 	await LibRaw.initialize();
-	expect(LibRaw.version()).toMatchInlineSnapshot(`"0.22.0-Devel202502"`);
-	expect(LibRaw.versionNumber()).toMatchInlineSnapshot("5632");
+	expect(LibRaw.version()).toMatchInlineSnapshot(`"0.22.1-Release"`);
+	expect(LibRaw.versionNumber()).toMatchInlineSnapshot("5633");
 	expect(LibRaw.cameraList()).toMatchSnapshot();
+    expect(LibRaw.cameraList()).toContain("Sigma DP2 Merrill");
 });
 
 it("ARW", async () => {
@@ -133,6 +134,57 @@ it("PEF", async () => {
 	expect(lensinfo.FocalLengthIn35mmFormat).toBe(285);
 });
 
+it("truth-spine sensor facts", async () => {
+    using libraw = new LibRaw();
+    await libraw.waitUntilReady();
+    const file = await fs.readFile(
+        path.join(samplesDir, "CR2", "sample_canon_400d1.cr2"),
+    );
+    libraw.open(file.buffer);
+    libraw.unpack();
+
+    expect({
+        activeHeight: libraw.getActiveHeight(),
+        activeWidth: libraw.getActiveWidth(),
+        flip: libraw.getFlip(),
+        marginBottom: libraw.getBottomMargin(),
+        marginLeft: libraw.getLeftMargin(),
+        marginRight: libraw.getRightMargin(),
+        marginTop: libraw.getTopMargin(),
+        pixelAspect: libraw.getPixelAspect(),
+        rawPitch: libraw.getRawPitch(),
+        rawHeight: libraw.getRawHeight(),
+        rawWidth: libraw.getRawWidth(),
+    }).toEqual({
+        activeHeight: 2602,
+        activeWidth: 3906,
+        flip: 0,
+        marginBottom: 2,
+        marginLeft: 42,
+        marginRight: 0,
+        marginTop: 18,
+        pixelAspect: 1,
+        rawPitch: 7896,
+        rawHeight: 2622,
+        rawWidth: 3948,
+    });
+    expect([0, 1, 2, 3].map((index) => libraw.getBlackLevel(index))).toEqual([
+        256,
+        255,
+        255,
+        256,
+    ]);
+    expect([0, 1, 2, 3].map((index) => libraw.getLinearMax(index))).toEqual([
+        0,
+        0,
+        0,
+        0,
+    ]);
+    expect(libraw.getRawImage()).toHaveLength(2622 * 3948);
+    expect(libraw.getColor3Image()).toBeNull();
+    expect(libraw.getColor4Image()).toBeNull();
+});
+
 it("RW2", async () => {
 	using libraw = new LibRaw();
 	await libraw.waitUntilReady();
@@ -181,4 +233,33 @@ it("RAW", async () => {
 
 	const lensinfo = libraw.getLensInfo();
 	expect(lensinfo.EXIF_MaxAp).toBe(2);
+});
+
+it("truth-spine color and source facts", async () => {
+    using libraw = new LibRaw();
+    await libraw.waitUntilReady();
+    const file = await fs.readFile(
+        path.join(samplesDir, "DNG", "RAW_LEICA_M8.DNG"),
+    );
+    libraw.open(file.buffer);
+    libraw.unpack();
+
+    expect(libraw.getColors()).toBe(3);
+    expect(libraw.getIsFoveon()).toBe(false);
+    expect(
+        [0, 1, 2, 3]
+            .map((index) => libraw.getCdesc(index))
+            .map((code) => String.fromCharCode(code))
+            .join(""),
+    ).toBe("RGBG");
+    expect(libraw.getFilters()).not.toBe(0);
+    expect(
+        [0, 1, 2].map((row) =>
+            [0, 1, 2, 3].map((column) => libraw.getCmatrix(row, column)),
+        ),
+    ).toEqual([
+        [1.8086563348770142, -0.3835689425468445, -0.4250873625278473, 0],
+        [-0.15259668231010437, 1.4539766311645508, -0.3013799488544464, 0],
+        [0.07575493305921555, -0.6642489433288574, 1.5884939432144165, 0],
+    ]);
 });

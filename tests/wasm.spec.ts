@@ -8,7 +8,8 @@ const __dirname = path.dirname(__filename);
 const wasmPath = path.join(
 	__dirname,
 	"node_modules",
-	"libraw.wasm",
+	"@colorhythm",
+	"libraw-wasm",
 	"dist",
 	"libraw.wasm",
 );
@@ -16,6 +17,6 @@ const wasmPath = path.join(
 it("specify wasm binary", async () => {
 	const wasm = fs.readFile(wasmPath).then((buf) => new Uint8Array(buf).buffer);
 	await LibRaw.initialize(wasm);
-	expect(LibRaw.version()).toMatchInlineSnapshot(`"0.22.0-Devel202502"`);
-	expect(LibRaw.versionNumber()).toMatchInlineSnapshot("5632");
+	expect(LibRaw.version()).toMatchInlineSnapshot(`"0.22.1-Release"`);
+	expect(LibRaw.versionNumber()).toMatchInlineSnapshot("5633");
 });

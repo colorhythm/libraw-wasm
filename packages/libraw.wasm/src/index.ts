@@ -20,6 +20,7 @@ import type {
 	LibRawDataT,
 	LibRawProcessedImageT,
 	LibRawWasmModule,
+    Ptr,
 } from "./types/index.js";
 
 type PromiseOr<T> = T | Promise<T>;
@@ -178,12 +179,71 @@ export class LibRaw implements Disposable {
 			offset: processed,
 		});
 	}
+    private readRawPixels(ptr: Ptr, channels: number) {
+        if (!ptr) return null;
+        const height = this.getRawHeight();
+        const rowLength = this.getRawWidth() * channels;
+        const pitch = this.getRawPitch();
+        const stride = pitch
+            ? pitch / Uint16Array.BYTES_PER_ELEMENT
+            : rowLength;
+        if (!Number.isInteger(stride) || stride < rowLength) {
+            throw new Error(
+                `Raw pitch ${pitch} bytes cannot contain ${rowLength} 16-bit values`,
+            );
+        }
+        const source = new Uint16Array(
+            LibRaw.module.HEAPU8.buffer,
+            ptr,
+            stride * height,
+        );
+        if (stride === rowLength) return source;
+        const pixels = new Uint16Array(rowLength * height);
+        for (let row = 0; row < height; row++) {
+            const start = row * stride;
+            pixels.set(source.subarray(start, start + rowLength), row * rowLength);
+        }
+        return pixels;
+    }
+    getActiveHeight() {
+        return LibRaw.module._libraw_get_active_height(this.lr);
+    }
+    getActiveWidth() {
+        return LibRaw.module._libraw_get_active_width(this.lr);
+    }
+    getBlackLevel(index: Int) {
+        return LibRaw.module._libraw_get_black_level(this.lr, index);
+    }
+    getBottomMargin() {
+        return LibRaw.module._libraw_get_bottom_margin(this.lr);
+    }
+    getCdesc(index: Int) {
+        return LibRaw.module._libraw_get_cdesc(this.lr, index);
+    }
+    getCmatrix(i: Int, j: Int) {
+        return LibRaw.module._libraw_get_cmatrix(this.lr, i, j);
+    }
+    getColors() {
+        return LibRaw.module._libraw_get_colors(this.lr);
+    }
+    getFilters() {
+        return LibRaw.module._libraw_get_filters(this.lr);
+    }
+    getFlip() {
+        return LibRaw.module._libraw_get_flip(this.lr);
+    }
+    getIsFoveon() {
+        return Boolean(LibRaw.module._libraw_get_is_foveon(this.lr));
+    }
 	getRawHeight() {
 		return LibRaw.module._libraw_get_raw_height(this.lr);
 	}
 	getRawWidth() {
 		return LibRaw.module._libraw_get_raw_width(this.lr);
 	}
+    getRawPitch() {
+        return LibRaw.module._libraw_get_raw_pitch(this.lr);
+    }
 	getIHeight() {
 		return LibRaw.module._libraw_get_iheight(this.lr);
 	}
@@ -196,6 +256,21 @@ export class LibRaw implements Disposable {
 	getPreMul(index: Int) {
 		return LibRaw.module._libraw_get_pre_mul(this.lr, index);
 	}
+    getLeftMargin() {
+        return LibRaw.module._libraw_get_left_margin(this.lr);
+    }
+    getLinearMax(index: Int) {
+        return LibRaw.module._libraw_get_linear_max(this.lr, index);
+    }
+    getPixelAspect() {
+        return LibRaw.module._libraw_get_pixel_aspect(this.lr);
+    }
+    getRightMargin() {
+        return LibRaw.module._libraw_get_right_margin(this.lr);
+    }
+    getTopMargin() {
+        return LibRaw.module._libraw_get_top_margin(this.lr);
+    }
 	getRgbCam(index1: Int, index2: Int) {
 		return LibRaw.module._libraw_get_rgb_cam(this.lr, index1, index2);
 	}
@@ -279,12 +354,20 @@ export class LibRaw implements Disposable {
 	color(row: Int, col: Int): number {
 		return LibRaw.module._libraw_COLOR(this.lr, row, col);
 	}
+    getColor3Image() {
+        const ptr = LibRaw.module._libraw_get_color3_image(this.lr);
+        return this.readRawPixels(ptr, 3);
+    }
+    getColor4Image() {
+        const ptr = LibRaw.module._libraw_get_color4_image(this.lr);
+        return this.readRawPixels(ptr, 4);
+    }
 	recycle() {
 		LibRaw.module._libraw_recycle(this.lr);
 	}
 	getRawImage() {
 		const ptr = LibRaw.module._libraw_get_raw_image(this.lr);
-		return new Uint16Array(LibRaw.module.HEAPU8.buffer, ptr);
+        return this.readRawPixels(ptr, 1);
 	}
 	getIParams() {
 		return iparams_t.read({

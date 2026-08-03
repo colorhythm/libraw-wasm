@@ -33,6 +33,24 @@ export interface LibRawWasmModule {
 	 * @see https://www.libraw.org/docs/API-CXX.html#open_buffer
 	 */
 	_libraw_open_buffer(lr: LibRawDataT, buffer: Ptr, size: SizeT): ErrorCode;
+    _libraw_get_active_height(lr: LibRawDataT): Int;
+    _libraw_get_active_width(lr: LibRawDataT): Int;
+    _libraw_get_black_level(lr: LibRawDataT, index: Int): UnsignedInt;
+    _libraw_get_bottom_margin(lr: LibRawDataT): Int;
+    _libraw_get_cdesc(lr: LibRawDataT, index: Int): Int;
+    _libraw_get_cmatrix(lr: LibRawDataT, i: Int, j: Int): Float;
+    _libraw_get_color3_image(lr: LibRawDataT): Ptr;
+    _libraw_get_color4_image(lr: LibRawDataT): Ptr;
+    _libraw_get_colors(lr: LibRawDataT): Int;
+    _libraw_get_filters(lr: LibRawDataT): UnsignedInt;
+    _libraw_get_flip(lr: LibRawDataT): Int;
+    _libraw_get_is_foveon(lr: LibRawDataT): UnsignedInt;
+    _libraw_get_left_margin(lr: LibRawDataT): Int;
+    _libraw_get_linear_max(lr: LibRawDataT, index: Int): UnsignedInt;
+    _libraw_get_pixel_aspect(lr: LibRawDataT): number;
+    _libraw_get_raw_pitch(lr: LibRawDataT): UnsignedInt;
+    _libraw_get_right_margin(lr: LibRawDataT): Int;
+    _libraw_get_top_margin(lr: LibRawDataT): Int;
 	_libraw_get_raw_height(lr: LibRawDataT): Int;
 	_libraw_get_raw_width(lr: LibRawDataT): Int;
 	_libraw_get_iheight(lr: LibRawDataT): Int;
