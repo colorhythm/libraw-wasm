@@ -26,6 +26,7 @@ camera-raw analysis:
 - Camera matrices, channel descriptions, and white-balance multipliers
 - Rawpy-compatible adjusted black levels and reported per-channel linear maxima
 - Processing setters for `half_size` and `use_camera_wb`
+- Typed `LibRawError` diagnostics with stable numeric LibRaw error codes
 - LibRaw's X3F decoder compiled into the WebAssembly build
 
 ## Install
@@ -99,6 +100,24 @@ The TypeScript return type is `Uint16Array | null`, each non-null array has the
 exact unpacked length without row padding, and every array owns its storage.
 Code that assumed the earlier non-null type should select the available source
 layout explicitly, as in the example above.
+
+## Error handling
+
+LibRaw failures throw `LibRawError`, which preserves the numeric LibRaw error
+code alongside its diagnostic message:
+
+```ts
+import { LibRawError } from "@colorhythm/libraw-wasm";
+
+try {
+    decoder.open(buffer);
+} catch (error) {
+    if (error instanceof LibRawError) {
+        console.error(error.code, error.message);
+    }
+    throw error;
+}
+```
 
 ## Analysis API
 

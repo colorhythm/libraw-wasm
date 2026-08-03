@@ -347,9 +347,9 @@ async function main() {
     const makefile = `\
 all: lib/libraw.wasm
 ${patchedMakefile}
-CFLAGS+=-DUSE_X3FTOOLS
+CFLAGS+=-DUSE_X3FTOOLS -fexceptions
 lib/libraw.wasm: \${LIB_OBJECTS}
-	$\{CC} -Os -o lib/libraw.mjs -s MODULARIZE=1 -s EXPORTED_RUNTIME_METHODS=HEAPU8 -s ALLOW_MEMORY_GROWTH=1 -s 'EXPORTED_FUNCTIONS=${JSON.stringify(
+	$\{CC} -Os -fexceptions -o lib/libraw.mjs -s MODULARIZE=1 -s EXPORTED_RUNTIME_METHODS=HEAPU8 -s ALLOW_MEMORY_GROWTH=1 -s 'EXPORTED_FUNCTIONS=${JSON.stringify(
         exportFunctions,
     )}' \${LIB_OBJECTS}
 `;

@@ -76,6 +76,16 @@ const thumbnail_t = libraw_thumbnail_t().override(
     typ.pointerArrayFromLengthField(typ.u8, "tlength"),
 );
 
+export class LibRawError extends Error {
+    readonly code: number;
+
+    constructor(code: number, message: string) {
+        super(message);
+        this.code = code;
+        this.name = "LibRawError";
+    }
+}
+
 export class LibRaw implements Disposable {
     private static modulePromise: Promise<LibRawWasmModule> | undefined;
     private static module: LibRawWasmModule;
@@ -177,10 +187,12 @@ export class LibRaw implements Disposable {
             this.lr,
             errcPtr,
         );
-        const _code = this.readI32(errcPtr);
+        const code = this.readI32(errcPtr);
         LibRaw.module._free(errcPtr);
-        // this.handleError(code as ErrorCode);
-        if (!ptr) throw new Error("Unexpected error");
+        if (!ptr) {
+            this.handleError(code as ErrorCode);
+            throw new Error("LibRaw did not return a processed image");
+        }
         const ret = this.readProcessedImage(ptr);
         LibRaw.module._libraw_dcraw_clear_mem(ptr);
         return ret;
@@ -458,12 +470,17 @@ export class LibRaw implements Disposable {
         });
     }
     private handleError(code: ErrorCode) {
-        if (code)
-            throw Error(this.readString(LibRaw.module._libraw_strerror(code)));
+        if (code) {
+            const message = this.readString(
+                LibRaw.module._libraw_strerror(code),
+            );
+            throw new LibRawError(code, message);
+        }
     }
     private readString(ptr: CharPtr) {
+        if (!ptr) return "";
         return typ
-            .charPointerAsString()
+            .sizedCharArrayAsString(Number.POSITIVE_INFINITY)
             .read({ buf: LibRaw.module.HEAPU8, offset: ptr }, {});
     }
     private readI32(ptr: number): number {
