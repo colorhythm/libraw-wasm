@@ -1,13 +1,13 @@
 {
-	"compilerOptions": {
-		"target": "esnext",
-		"module": "nodenext",
-		"moduleResolution": "nodenext",
-		"lib": ["esnext", "dom"],
-		"strict": true,
-		"rootDir": "./src",
-		"outDir": "./dist",
-		"declaration": true
-	},
-	"exclude": ["node_modules", "dist"]
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "lib": ["esnext", "dom"],
+        "strict": true,
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "declaration": true
+    },
+    "exclude": ["node_modules", "dist"]
 }

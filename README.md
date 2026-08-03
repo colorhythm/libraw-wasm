@@ -87,10 +87,18 @@ async function inspectCameraRaw(file: File) {
 ```
 
 `getRawImage()`, `getColor3Image()`, and `getColor4Image()` return
-`Uint16Array` data after `unpack()`. The current binding does not expose
-LibRaw's floating-point source buffers. A returned array may view WebAssembly
-memory, so copy data that must survive another decode, `recycle()`, or
-`dispose()`.
+owned `Uint16Array` copies after `unpack()`. They remain valid after another
+decode, `recycle()`, WebAssembly memory growth, or `dispose()`. A method returns
+`null` when LibRaw does not expose that source layout for the file. The current
+binding does not expose LibRaw's floating-point source buffers.
+
+## 1.1.0 compatibility note
+
+Version 1.1.0 corrects the source-pixel return contract introduced in 1.0.0.
+The TypeScript return type is `Uint16Array | null`, each non-null array has the
+exact unpacked length without row padding, and every array owns its storage.
+Code that assumed the earlier non-null type should select the available source
+layout explicitly, as in the example above.
 
 ## Analysis API
 
@@ -134,9 +142,10 @@ dedicated Worker. Transfer the input `ArrayBuffer` to the Worker, perform
 analysis there, and return only the summaries or pixel data the interface
 needs.
 
-The current binding copies each opened file into its realm-global WebAssembly
-heap. For unbounded batch processing, terminate and replace the Worker between
-jobs until input-buffer ownership is made explicit in the API.
+Each successful `open()` keeps its copied input alive until another `open()`,
+`recycle()`, or `dispose()` releases it. Reuse a decoder for sequential jobs or
+dispose it when the Worker is finished. Source-pixel getters return owned
+copies that can be transferred or retained independently.
 
 ## WebAssembly loading and lifecycle
 
@@ -198,4 +207,5 @@ or
 [CDDL 1.0](https://github.com/colorhythm/libraw-wasm/blob/main/packages/libraw.wasm/LibRaw/LICENSE.CDDL).
 See LibRaw's
 [copyright and notices](https://github.com/colorhythm/libraw-wasm/blob/main/packages/libraw.wasm/LibRaw/COPYRIGHT)
-for its included third-party components.
+for its included third-party components. The npm tarball includes all three
+LibRaw files under `LibRaw/`.

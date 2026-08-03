@@ -1,15 +1,15 @@
 {
-	"type": "module",
-	"scripts": {
-		"test": "vitest",
-		"check": "tsc --noEmit"
-	},
-	"dependencies": {
-		"@colorhythm/libraw-wasm": "workspace:*"
-	},
-	"devDependencies": {
-		"@types/node": "^22.13.4",
-		"vitest": "^3.0.6",
-		"typescript": "catalog:"
-	}
+    "type": "module",
+    "scripts": {
+        "test": "vitest",
+        "check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@colorhythm/libraw-wasm": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^22.13.4",
+        "vitest": "^3.0.6",
+        "typescript": "catalog:"
+    }
 }

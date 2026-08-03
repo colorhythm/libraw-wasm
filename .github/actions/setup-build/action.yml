@@ -26,7 +26,7 @@ runs:
         cache: pnpm
     - name: Install dependencies
       shell: bash
-      run: corepack enable && pnpm install
+      run: corepack enable && pnpm install --frozen-lockfile
     - name: Install emscripten
       id: emscripten
       shell: bash
