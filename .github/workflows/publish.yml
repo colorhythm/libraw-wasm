@@ -1,0 +1,39 @@
+name: Publish npm package
+
+on:
+    push:
+        tags:
+            - "v*.*.*"
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  submodules: true
+            - uses: ./.github/actions/setup-build
+              with:
+                  node-version: "24"
+            - name: Check source
+              run: pnpm check
+            - name: Check playground
+              run: pnpm --filter playground check
+            - name: Lint playground
+              run: pnpm --filter playground lint
+            - name: Test package
+              run: pnpm --filter ./tests exec vitest run --cache=false
+            - name: Verify release tag
+              run: node packages/libraw.wasm/scripts/verify-release.mjs
+            - name: Install trusted-publishing npm client
+              run: npm install --global npm@11.5.1
+            - name: Inspect package contents
+              run: npm pack --dry-run --json
+              working-directory: packages/libraw.wasm
+            - name: Publish package
+              run: npm publish --access public
+              working-directory: packages/libraw.wasm

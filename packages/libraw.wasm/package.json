@@ -1,52 +1,63 @@
 {
-	"name": "@colorhythm/libraw-wasm",
-	"version": "1.0.0",
-	"description": "WebAssembly build of [LibRaw](https://www.libraw.org/), a library for reading RAW iamges.",
-	"type": "module",
-	"main": "dist/index.js",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		},
-		"./libraw.wasm": {
-			"default": "./dist/libraw.wasm"
-		}
-	},
-	"scripts": {
-		"build": "pnpm build:wasm && pnpm build:bindings && pnpm build:ts",
-		"build:wasm": "node scripts/build.mjs",
-		"build:bindings": "node scripts/bindings.mjs",
-		"build:ts": "tsc",
-		"watch": "pnpm run \"/^watch:.*/\"",
-		"watch:ts": "tsc -w"
-	},
-	"files": [
-		"dist"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/colorhythm/libraw-wasm.git"
-	},
-	"keywords": [
-		"libraw",
-		"raw",
-		"image",
-		"wasm",
-		"webassembly"
-	],
-	"author": "TOMIKAWA Sotaro <tommysouta@gmail.com>",
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/colorhythm/libraw-wasm/issues"
-	},
-	"homepage": "https://github.com/colorhythm/libraw-wasm#readme",
-	"devDependencies": {
-		"@typed-cstruct/generator": "^0.5.0",
-		"@types/node": "^22.13.4",
-		"typescript": "catalog:"
-	},
-	"dependencies": {
-		"typed-cstruct": "^0.10.2"
-	}
+    "name": "@colorhythm/libraw-wasm",
+    "version": "1.1.0",
+    "description": "LibRaw WebAssembly bindings with camera-raw analysis surfaces for browser and Node.js applications.",
+    "type": "module",
+    "main": "dist/index.js",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./libraw.wasm": {
+            "default": "./dist/libraw.wasm"
+        }
+    },
+    "scripts": {
+        "build": "pnpm build:wasm && pnpm build:bindings && pnpm build:ts",
+        "build:bindings": "node scripts/bindings.mjs",
+        "build:ts": "tsc",
+        "build:wasm": "node scripts/build.mjs",
+        "prepack": "node scripts/verify-package.mjs",
+        "watch": "pnpm run \"/^watch:.*/\"",
+        "watch:ts": "tsc -w"
+    },
+    "files": [
+        "CHANGELOG.md",
+        "dist",
+        "LibRaw/COPYRIGHT",
+        "LibRaw/LICENSE.CDDL",
+        "LibRaw/LICENSE.LGPL"
+    ],
+    "repository": {
+        "directory": "packages/libraw.wasm",
+        "type": "git",
+        "url": "git+https://github.com/colorhythm/libraw-wasm.git"
+    },
+    "keywords": [
+        "camera",
+        "camera-raw",
+        "image",
+        "libraw",
+        "raw",
+        "wasm",
+        "webassembly"
+    ],
+    "author": "TOMIKAWA Sotaro <tommysouta@gmail.com>",
+    "license": "MIT",
+    "publishConfig": {
+        "access": "public"
+    },
+    "bugs": {
+        "url": "https://github.com/colorhythm/libraw-wasm/issues"
+    },
+    "homepage": "https://github.com/colorhythm/libraw-wasm#readme",
+    "devDependencies": {
+        "@typed-cstruct/generator": "^0.5.0",
+        "@types/node": "^22.13.4",
+        "typescript": "catalog:"
+    },
+    "dependencies": {
+        "typed-cstruct": "^0.10.2"
+    }
 }
